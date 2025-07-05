@@ -9,7 +9,7 @@ from mcp_server_odoo.odoo_client import OdooClient, OdooConfig
 def odoo_config():
     """Create test Odoo configuration."""
     return OdooConfig(
-        url="https://hzcont.odoo.com",
+        url="https://test.odoo.com",
         database="test_db",
         username="test_user",
         password="test_pass",

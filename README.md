@@ -18,14 +18,14 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 ### Via pip (recommended)
 
 ```bash
-pip install mcp-server-odoo
+pip install odoo-mcp-server
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/yourusername/mcp-server-odoo.git
-cd mcp-server-odoo
+git clone https://github.com/vzeman/odoo-mcp-server.git
+cd odoo-mcp-server
 pip install -e .
 ```
 
@@ -282,4 +282,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For issues and feature requests, please use the [GitHub issue tracker](https://github.com/yourusername/mcp-server-odoo/issues).
+For issues and feature requests, please use the [GitHub issue tracker](https://github.com/vzeman/odoo-mcp-server/issues).

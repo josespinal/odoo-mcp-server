@@ -12,7 +12,7 @@ on:
         default: false
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -33,37 +33,18 @@ jobs:
     - name: Check package
       run: twine check dist/*
     
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist/
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/mcp-server-odoo/
-    permissions:
-      id-token: write  # Required for trusted publishing
-    
-    steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist/
-    
     - name: Publish to Test PyPI
       if: github.event.inputs.test_pypi == 'true'
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
-        skip-existing: true
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      run: |
+        twine upload --repository testpypi dist/*
     
     - name: Publish to PyPI
-      if: github.event_name == 'release' && github.event.inputs.test_pypi != 'true'
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        skip-existing: true
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_pypi != 'true')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        twine upload dist/*

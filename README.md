@@ -2,6 +2,12 @@
 
 A Model Context Protocol (MCP) server that enables AI assistants to interact with Odoo ERP systems. This server provides tools for searching, creating, updating, and managing Odoo records through a standardized interface.
 
+## Demo
+
+![Odoo MCP Server Demo](docs/images/demo.gif)
+
+📺 [Watch the demo on YouTube](https://youtu.be/tanzyt_qEmE)
+
 ## Features
 
 - 🔍 **Search Records**: Query any Odoo model with complex domain filters

@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server that enables AI assistants to interact with Odoo ERP systems. This server provides tools for searching, creating, updating, and managing Odoo records through a standardized interface.
 
+## Custom MCP Server Development
+We develop MCP Servers for customers, if you need MCP server for your own system similar to Odoo MCP server, please contact us (https://www.flowhunt.io/contact/). 
+Here is the description how we develop MCP Servers for our customers: https://www.flowhunt.io/services/mcp-server-development/
+
 ## Demo
 
 ![Odoo MCP Server Demo](docs/images/demo.gif)

@@ -35,7 +35,7 @@ pip install odoo-mcp-server
 ### From source
 
 ```bash
-git clone https://github.com/vzeman/odoo-mcp-server.git
+git clone https://github.com/josespinal/odoo-mcp-server.git
 cd odoo-mcp-server
 pip install -e .
 ```
@@ -50,17 +50,13 @@ Create a `.env` file in your project directory or set these environment variable
 ODOO_URL=https://your-instance.odoo.com
 ODOO_DB=your-database-name
 ODOO_USERNAME=your-username@example.com
-ODOO_API_KEY=your-api-key-here
+ODOO_PASSWORD=your-password
 ```
 
 ### Getting Odoo Credentials
 
-1. **API Key**: 
-   - Log into your Odoo instance
-   - Go to Settings → Users & Companies → Users
-   - Select your user
-   - Under "API Keys" or "Security" tab, create a new API key
-   - Copy the key immediately (it won't be shown again)
+1. **Password**: 
+   - Your regular password, the one you login to
 
 2. **Database Name**:
    - Usually visible in the URL when logged in
@@ -86,7 +82,7 @@ Add this configuration to your Claude Desktop config file:
         "ODOO_URL": "https://your-instance.odoo.com",
         "ODOO_DB": "your-database",
         "ODOO_USERNAME": "your-email@example.com",
-        "ODOO_API_KEY": "your-api-key"
+        "ODOO_PASSWORD": "your-password"
       }
     }
   }

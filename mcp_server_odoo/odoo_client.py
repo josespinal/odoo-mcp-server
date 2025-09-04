@@ -1,5 +1,8 @@
 """Odoo client based on the odooly library."""
 
+import os
+import xmlrpc
+import ssl
 from typing import Any, cast
 
 from pydantic import BaseModel, Field
@@ -10,8 +13,33 @@ except Exception:  # pragma: no cover - odooly might not be installed in tests
     OdoolyClient = None  # type: ignore
 
 
+class CustomClient(OdoolyClient):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.transport = CustomTransport()
+
+
+class CustomTransport(xmlrpc.client.SafeTransport):
+    def __init__(self, context=None):
+        super().__init__(context)
+        self.context = ssl._create_unverified_context()
+
+    def send_headers(self, connection, headers):
+        # Get custom header from environment variables
+        header_name = os.getenv("ODOO_CUSTOM_HEADER_NAME")
+        header_value = os.getenv("ODOO_CUSTOM_HEADER_VALUE")
+        
+        if header_name and header_value:
+            connection.putheader(header_name, header_value)
+            super().send_headers(connection, headers)
+        else:
+            super().send_headers(connection, headers)
+
+
 class OdooConfig(BaseModel):
     """Configuration for Odoo connection."""
+    
+    model_config = {"arbitrary_types_allowed": True}
 
     url: str = Field(..., description="Odoo instance URL")
     database: str = Field(..., description="Odoo database name")
@@ -19,6 +47,7 @@ class OdooConfig(BaseModel):
     password: str | None = Field(None, description="Odoo password")
     api_key: str | None = Field(None, description="Odoo API key")
     timeout: int = Field(120, description="Request timeout in seconds")
+    transport: CustomTransport | None = Field(None, description="Custom transport")
 
     def model_post_init(self, __context: Any) -> None:  # pragma: no cover - pydantic hook
         """Validate that either password or api_key is provided."""
@@ -41,14 +70,15 @@ class OdooClient:
         self.password = config.api_key or config.password
         self.timeout = config.timeout
         self.uid: int | None = None
-
+        self.transport = config.transport or CustomTransport()
+        
         # Initialise odooly client and environment
         self.client = OdoolyClient(
             self.url,
             self.database,
             self.username,
             self.password,
-            timeout=self.timeout,
+            transport=self.transport,
         )
         self.env = self.client.env
 

@@ -22,6 +22,7 @@ Here is the description how we develop MCP Servers for our customers: https://ww
 - 🔗 **Execute Methods**: Call custom methods on Odoo models
 - 📋 **List Models**: Discover available models in your Odoo instance
 - 🔧 **Model Introspection**: Get field definitions for any model
+- ✅ **Odoo 12+ Compatibility**: Uses the [Odooly](https://pypi.org/project/odooly/) library to communicate with Odoo, ensuring support for versions 12 and later
 
 ## Installation
 

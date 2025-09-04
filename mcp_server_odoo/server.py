@@ -3,7 +3,7 @@
 import asyncio
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 from mcp.server import Server
@@ -19,13 +19,13 @@ load_dotenv()
 server = Server("odoo-mcp-server")
 
 # Global Odoo client instance
-odoo_client: Optional[OdooClient] = None
+odoo_client: OdooClient | None = None
 
 
 def get_odoo_client() -> OdooClient:
     """Get or create Odoo client instance."""
     global odoo_client
-    
+
     if odoo_client is None:
         try:
             config = OdooConfig(
@@ -38,13 +38,13 @@ def get_odoo_client() -> OdooClient:
             )
             odoo_client = OdooClient(config)
         except (KeyError, ValidationError) as e:
-            raise ValueError(f"Invalid Odoo configuration: {e}")
-    
+            raise ValueError(f"Invalid Odoo configuration: {e}") from e
+
     return odoo_client
 
 
 @server.list_tools()
-async def list_tools() -> List[Tool]:
+async def list_tools() -> list[Tool]:
     """List available tools."""
     return [
         Tool(
@@ -211,11 +211,11 @@ async def list_tools() -> List[Tool]:
 
 
 @server.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     """Handle tool calls."""
     try:
         client = get_odoo_client()
-        
+
         if name == "search_records":
             result = await asyncio.to_thread(
                 client.search_read,
@@ -226,22 +226,16 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 limit=arguments.get("limit"),
                 order=arguments.get("order"),
             )
-            return [TextContent(
-                type="text",
-                text=json.dumps(result, indent=2, default=str)
-            )]
-            
+            return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+
         elif name == "create_record":
             result = await asyncio.to_thread(
                 client.create,
                 model=arguments["model"],
                 values=arguments["values"],
             )
-            return [TextContent(
-                type="text",
-                text=f"Created record with ID: {result}"
-            )]
-            
+            return [TextContent(type="text", text=f"Created record with ID: {result}")]
+
         elif name == "update_record":
             success = await asyncio.to_thread(
                 client.write,
@@ -249,22 +243,26 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 ids=arguments["ids"],
                 values=arguments["values"],
             )
-            return [TextContent(
-                type="text",
-                text=f"Update {'successful' if success else 'failed'} for IDs: {arguments['ids']}"
-            )]
-            
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Update {'successful' if success else 'failed'} for IDs: {arguments['ids']}",
+                )
+            ]
+
         elif name == "delete_record":
             success = await asyncio.to_thread(
                 client.unlink,
                 model=arguments["model"],
                 ids=arguments["ids"],
             )
-            return [TextContent(
-                type="text",
-                text=f"Delete {'successful' if success else 'failed'} for IDs: {arguments['ids']}"
-            )]
-            
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Delete {'successful' if success else 'failed'} for IDs: {arguments['ids']}",
+                )
+            ]
+
         elif name == "get_record":
             result = await asyncio.to_thread(
                 client.read,
@@ -272,57 +270,41 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 ids=arguments["ids"],
                 fields=arguments.get("fields"),
             )
-            return [TextContent(
-                type="text",
-                text=json.dumps(result, indent=2, default=str)
-            )]
-            
+            return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+
         elif name == "list_models":
             models = await asyncio.to_thread(client.get_model_list)
             if not arguments.get("transient", False):
                 models = [m for m in models if not m.get("transient", False)]
-            
+
             # Format output
             output = "Available Odoo models:\n"
             for model in sorted(models, key=lambda x: x["model"]):
                 output += f"- {model['model']}: {model['name']}\n"
-                
+
             return [TextContent(type="text", text=output)]
-            
+
         elif name == "get_model_fields":
             fields = await asyncio.to_thread(
                 client.fields_get,
                 model=arguments["model"],
                 fields=arguments.get("fields"),
             )
-            return [TextContent(
-                type="text",
-                text=json.dumps(fields, indent=2, default=str)
-            )]
-            
+            return [TextContent(type="text", text=json.dumps(fields, indent=2, default=str))]
+
         else:
-            return [TextContent(
-                type="text",
-                text=f"Unknown tool: {name}"
-            )]
-            
+            return [TextContent(type="text", text=f"Unknown tool: {name}")]
+
     except Exception as e:
-        return [TextContent(
-            type="text",
-            text=f"Error: {type(e).__name__}: {str(e)}"
-        )]
+        return [TextContent(type="text", text=f"Error: {type(e).__name__}: {str(e)}")]
 
 
-async def main():
+async def main() -> None:
     """Run the MCP server."""
     from mcp.server.stdio import stdio_server
-    
+
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            server.create_initialization_options()
-        )
+        await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
 if __name__ == "__main__":

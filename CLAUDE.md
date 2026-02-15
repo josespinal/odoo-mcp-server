@@ -68,6 +68,10 @@ Required environment variables (set in `.env` file):
 - `ODOO_USERNAME`: Odoo username
 - `ODOO_PASSWORD` or `ODOO_API_KEY`: Authentication credential
 
+Optional environment variables:
+- `ODOO_VERIFY_SSL`: Enable SSL certificate verification (default: `false`). Set to `true` for production environments. Set to `false` for local development with self-signed certificates.
+- `ODOO_TIMEOUT`: Request timeout in seconds (default: `120`)
+
 ## Testing Approach
 
 - Unit tests for individual components (client, tools)

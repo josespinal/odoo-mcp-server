@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
@@ -13,7 +14,20 @@ from pydantic import ValidationError
 from .odoo_client import OdooClient, OdooConfig
 
 # Load environment variables
-load_dotenv()
+# Look for .env file starting from this script's directory, then walk up the directory tree
+# This ensures the .env file is found regardless of where the command is run from
+script_dir = Path(__file__).parent
+# Walk up from script directory looking for .env file
+current_path = script_dir
+while current_path != current_path.parent:
+    env_file = current_path / ".env"
+    if env_file.exists():
+        load_dotenv(dotenv_path=env_file)
+        break
+    current_path = current_path.parent
+else:
+    # Fallback to default behavior (current working directory)
+    load_dotenv()
 
 # Initialize MCP server
 server = Server("odoo-mcp-server")
@@ -28,6 +42,10 @@ def get_odoo_client() -> OdooClient:
 
     if odoo_client is None:
         try:
+            # Parse verify_ssl from environment (defaults to False for local development)
+            verify_ssl_str = os.environ.get("ODOO_VERIFY_SSL", "false").lower()
+            verify_ssl = verify_ssl_str in ("true", "1", "yes", "on")
+            
             config = OdooConfig(
                 url=os.environ["ODOO_URL"],
                 database=os.environ["ODOO_DB"],
@@ -35,6 +53,7 @@ def get_odoo_client() -> OdooClient:
                 password=os.environ.get("ODOO_PASSWORD"),
                 api_key=os.environ.get("ODOO_API_KEY"),
                 timeout=int(os.environ.get("ODOO_TIMEOUT", "120")),
+                verify_ssl=verify_ssl,
             )
             odoo_client = OdooClient(config)
         except (KeyError, ValidationError) as e:
@@ -65,9 +84,18 @@ async def list_tools() -> list[Tool]:
                             "items": {
                                 "oneOf": [
                                     {"type": "string"},
-                                    {"type": "number"}, 
+                                    {"type": "number"},
                                     {"type": "boolean"},
-                                    {"type": "array"}
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {"type": "string"},
+                                                {"type": "number"},
+                                                {"type": "boolean"}
+                                            ]
+                                        }
+                                    }
                                 ]
                             }
                         },

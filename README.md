@@ -51,6 +51,10 @@ ODOO_URL=https://your-instance.odoo.com
 ODOO_DB=your-database-name
 ODOO_USERNAME=your-username@example.com
 ODOO_PASSWORD=your-password
+
+# Optional: SSL verification (default: false)
+# Set to true for production, false for local development with self-signed certificates
+ODOO_VERIFY_SSL=false
 ```
 
 ### Getting Odoo Credentials
@@ -255,6 +259,10 @@ Common Odoo models you can interact with:
 - Check if your IP is whitelisted (if applicable)
 - Ensure XML-RPC is enabled on your Odoo instance
 
+### SSL Certificate Errors (Local Development)
+- For local Odoo instances with self-signed certificates, set `ODOO_VERIFY_SSL=false` in your environment
+- For production environments, set `ODOO_VERIFY_SSL=true` to ensure secure connections
+
 ### Model Not Found
 - The model might require additional modules to be installed
 - Use `list_models` to see available models
@@ -290,3 +298,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For issues and feature requests, please use the [GitHub issue tracker](https://github.com/vzeman/odoo-mcp-server/issues).
+
+

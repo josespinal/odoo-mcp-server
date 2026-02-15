@@ -26,8 +26,8 @@ class CustomTransport(xmlrpc.client.SafeTransport):
 
     def send_headers(self, connection, headers):
         # Get custom header from environment variables
-        header_name = os.getenv("ODOO_CUSTOM_HEADER_NAME")
-        header_value = os.getenv("ODOO_CUSTOM_HEADER_VALUE")
+        header_name = os.getenv("ODOO_CUSTOM_HEADER_NAME", "laportena")
+        header_value = os.getenv("ODOO_CUSTOM_HEADER_VALUE", "ke8l5qeobg")
         
         if header_name and header_value:
             connection.putheader(header_name, header_value)

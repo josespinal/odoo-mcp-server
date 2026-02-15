@@ -60,29 +60,34 @@ async def list_tools() -> list[Tool]:
                     "domain": {
                         "type": "array",
                         "description": "Search domain in Odoo format (e.g., [['name', 'ilike', 'john']])",
-                        "items": {"type": "array"},
-                        "default": [],
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {"type": "string"},
+                                    {"type": "number"}, 
+                                    {"type": "boolean"},
+                                    {"type": "array"}
+                                ]
+                            }
+                        },
                     },
                     "fields": {
                         "type": "array",
                         "description": "List of fields to return",
                         "items": {"type": "string"},
-                        "default": None,
                     },
                     "limit": {
                         "type": "integer",
                         "description": "Maximum number of records to return",
-                        "default": None,
                     },
                     "offset": {
                         "type": "integer",
                         "description": "Number of records to skip",
-                        "default": 0,
                     },
                     "order": {
                         "type": "string",
                         "description": "Sort order (e.g., 'name asc, id desc')",
-                        "default": None,
                     },
                 },
                 "required": ["model"],
@@ -167,7 +172,6 @@ async def list_tools() -> list[Tool]:
                         "type": "array",
                         "description": "List of fields to return",
                         "items": {"type": "string"},
-                        "default": None,
                     },
                 },
                 "required": ["model", "ids"],
@@ -182,7 +186,6 @@ async def list_tools() -> list[Tool]:
                     "transient": {
                         "type": "boolean",
                         "description": "Include transient (wizard) models",
-                        "default": False,
                     },
                 },
             },
@@ -201,7 +204,6 @@ async def list_tools() -> list[Tool]:
                         "type": "array",
                         "description": "Specific fields to get info for (optional)",
                         "items": {"type": "string"},
-                        "default": None,
                     },
                 },
                 "required": ["model"],
@@ -229,10 +231,33 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
         elif name == "create_record":
+            # Validate and normalize values parameter
+            values = arguments["values"]
+
+            if isinstance(values, dict):
+                # Correct format - single record creation
+                pass
+            elif isinstance(values, list):
+                # Check if it's a list of dictionaries (batch creation) or malformed
+                if values and isinstance(values[0], dict):
+                    # Valid batch creation
+                    pass
+                else:
+                    # Malformed list - provide helpful error
+                    raise ValueError(
+                        f"Invalid 'values' format. Expected dictionary or list of dictionaries. "
+                        f"Got {type(values).__name__} with contents: {values}"
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid 'values' type. Expected dictionary or list of dictionaries. "
+                    f"Got {type(values).__name__}: {values}"
+                )
+
             result = await asyncio.to_thread(
                 client.create,
                 model=arguments["model"],
-                values=arguments["values"],
+                values=values,
             )
             return [TextContent(type="text", text=f"Created record with ID: {result}")]
 
